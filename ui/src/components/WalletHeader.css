@@ -1,0 +1,42 @@
+.wallet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: white;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+}
+
+.wallet-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.status {
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.status.connected {
+  color: #00cc00;
+  background: #f0fff0;
+}
+
+.status.disconnected {
+  color: #ff6600;
+  background: #fff9f0;
+}
+
+.address {
+  font-family: monospace;
+  background: #f5f5f5;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  color: #333;
+  font-size: 0.9rem;
+}

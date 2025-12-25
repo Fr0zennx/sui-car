@@ -60,10 +60,10 @@ body {
 .app-main {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 200px 1fr 1fr;
   gap: 2rem;
   padding: 2rem;
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   width: 100%;
 }
@@ -427,5 +427,170 @@ body {
   .notification {
     left: 1rem;
     right: 1rem;
+  }
+}
+/* Wallet Required / No Cars */
+.wallet-required,
+.no-cars {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.wallet-required-message,
+.no-cars-message {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+  max-width: 500px;
+}
+
+.wallet-required-message h2,
+.no-cars-message h2 {
+  font-size: 1.8rem;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+}
+
+.wallet-required-message p,
+.no-cars-message p {
+  color: #666;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.create-car-btn {
+  margin-top: 1rem;
+  padding: 1rem 2rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.create-car-btn:hover {
+  background: #0052cc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+}
+
+/* Car Selector */
+.car-selector {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  height: fit-content;
+}
+
+.car-selector h3 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: var(--text-dark);
+}
+
+.cars-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.car-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--bg-light);
+  border: 2px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.car-button:hover {
+  border-color: var(--primary);
+  background: #f0f7ff;
+}
+
+.car-button.active {
+  border-color: var(--primary);
+  background: #e6f0ff;
+  font-weight: 600;
+}
+
+.car-name {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.car-color {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 2px solid var(--border-color);
+}
+
+@media (max-width: 1200px) {
+  .app-main {
+    grid-template-columns: 1fr;
+  }
+
+  .car-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    height: auto;
+  }
+
+  .cars-list {
+    flex-direction: row;
+  }
+}
+
+@media (max-width: 1024px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .car-selector {
+    order: -1;
+  }
+
+  .color-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .app-main {
+    grid-template-columns: 1fr;
+  }
+
+  .car-selector {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .car-selector h3 {
+    grid-column: 1 / -1;
+  }
+
+  .cars-list {
+    grid-column: 1 / -1;
+    flex-direction: row;
+  }
+
+  .color-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
