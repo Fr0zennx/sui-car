@@ -3,8 +3,8 @@ export const SUI_CONFIG = {
   // Testnet RPC endpoint
   RPC_URL: 'https://fullnode.testnet.sui.io:443',
   
-  // Package ID - bu değer contract deploy ettikten sonra güncellenmeli
-  PACKAGE_ID: '0x0', // Placeholder - update after deployment
+  // Package ID - Testnet'te yayınlanan kontrat
+  PACKAGE_ID: '0x601309dfba134af0a8885ee9296adc512762bac597fad2da5d08978bfda0cc99',
   
   // Module name
   MODULE_NAME: 'garage',

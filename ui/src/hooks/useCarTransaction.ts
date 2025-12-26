@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
-import { useSignAndExecuteTransactionBlock } from '@mysten/dapp-kit';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { useSignAndExecuteTransaction } from '@mysten/dapp-kit';
+import { Transaction } from '@mysten/sui/transactions';
 import { SUI_CONFIG, CONTRACT_FUNCTIONS, GAS_BUDGET } from '../config/blockchain';
 
 export interface TransactionResult {
@@ -10,18 +10,18 @@ export interface TransactionResult {
 }
 
 export function useCarTransaction() {
-  const { mutate: signAndExecute } = useSignAndExecuteTransactionBlock();
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const executeTransaction = useCallback(
-    async (txBlock: TransactionBlock): Promise<TransactionResult> => {
+    async (tx: Transaction): Promise<TransactionResult> => {
       return new Promise((resolve) => {
         setIsLoading(true);
         setError(null);
 
         signAndExecute(
-          { transactionBlock: txBlock },
+          { transaction: tx },
           {
             onSuccess: (result) => {
               setIsLoading(false);
@@ -50,17 +50,17 @@ export function useCarTransaction() {
   // Araba mint etme
   const mintCar = useCallback(
     async (model: string, color: string) => {
-      const txBlock = new TransactionBlock();
+      const tx = new Transaction();
 
-      txBlock.moveCall({
+      tx.moveCall({
         target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.MINT_CAR}`,
         arguments: [
-          txBlock.pure.string(model),
-          txBlock.pure.string(color),
+          tx.pure.string(model),
+          tx.pure.string(color),
         ],
       });
 
-      return executeTransaction(txBlock);
+      return executeTransaction(tx);
     },
     [executeTransaction]
   );
@@ -68,17 +68,17 @@ export function useCarTransaction() {
   // Arabayı boyama
   const repaintCar = useCallback(
     async (carId: string, newColor: string) => {
-      const txBlock = new TransactionBlock();
+      const tx = new Transaction();
 
-      txBlock.moveCall({
+      tx.moveCall({
         target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.REPAINT_CAR}`,
         arguments: [
-          txBlock.object(carId),
-          txBlock.pure.string(newColor),
+          tx.object(carId),
+          tx.pure.string(newColor),
         ],
       });
 
-      return executeTransaction(txBlock);
+      return executeTransaction(tx);
     },
     [executeTransaction]
   );
@@ -86,14 +86,14 @@ export function useCarTransaction() {
   // Jant oluşturma
   const createWheels = useCallback(
     async (style: string) => {
-      const txBlock = new TransactionBlock();
+      const tx = new Transaction();
 
-      txBlock.moveCall({
+      tx.moveCall({
         target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.CREATE_WHEELS}`,
-        arguments: [txBlock.pure.string(style)],
+        arguments: [tx.pure.string(style)],
       });
 
-      return executeTransaction(txBlock);
+      return executeTransaction(tx);
     },
     [executeTransaction]
   );
@@ -101,14 +101,14 @@ export function useCarTransaction() {
   // Tampon oluşturma
   const createBumper = useCallback(
     async (shape: string) => {
-      const txBlock = new TransactionBlock();
+      const tx = new Transaction();
 
-      txBlock.moveCall({
+      tx.moveCall({
         target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.CREATE_BUMPER}`,
-        arguments: [txBlock.pure.string(shape)],
+        arguments: [tx.pure.string(shape)],
       });
 
-      return executeTransaction(txBlock);
+      return executeTransaction(tx);
     },
     [executeTransaction]
   );
@@ -116,17 +116,17 @@ export function useCarTransaction() {
   // Jant takma
   const installWheels = useCallback(
     async (carId: string, wheelsId: string) => {
-      const txBlock = new TransactionBlock();
+      const tx = new Transaction();
 
-      txBlock.moveCall({
+      tx.moveCall({
         target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.INSTALL_WHEELS}`,
         arguments: [
-          txBlock.object(carId),
-          txBlock.object(wheelsId),
+          tx.object(carId),
+          tx.object(wheelsId),
         ],
       });
 
-      return executeTransaction(txBlock);
+      return executeTransaction(tx);
     },
     [executeTransaction]
   );
@@ -134,17 +134,17 @@ export function useCarTransaction() {
   // Tampon takma
   const installBumper = useCallback(
     async (carId: string, bumperId: string) => {
-      const txBlock = new TransactionBlock();
+      const tx = new Transaction();
 
-      txBlock.moveCall({
+      tx.moveCall({
         target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.INSTALL_BUMPER}`,
         arguments: [
-          txBlock.object(carId),
-          txBlock.object(bumperId),
+          tx.object(carId),
+          tx.object(bumperId),
         ],
       });
 
-      return executeTransaction(txBlock);
+      return executeTransaction(tx);
     },
     [executeTransaction]
   );
@@ -152,14 +152,14 @@ export function useCarTransaction() {
   // Jant çıkartma
   const removeWheels = useCallback(
     async (carId: string) => {
-      const txBlock = new TransactionBlock();
+      const tx = new Transaction();
 
-      txBlock.moveCall({
+      tx.moveCall({
         target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.REMOVE_WHEELS}`,
-        arguments: [txBlock.object(carId)],
+        arguments: [tx.object(carId)],
       });
 
-      return executeTransaction(txBlock);
+      return executeTransaction(tx);
     },
     [executeTransaction]
   );
@@ -167,14 +167,58 @@ export function useCarTransaction() {
   // Tampon çıkartma
   const removeBumper = useCallback(
     async (carId: string) => {
-      const txBlock = new TransactionBlock();
+      const tx = new Transaction();
 
-      txBlock.moveCall({
+      tx.moveCall({
         target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.REMOVE_BUMPER}`,
-        arguments: [txBlock.object(carId)],
+        arguments: [tx.object(carId)],
       });
 
-      return executeTransaction(txBlock);
+      return executeTransaction(tx);
+    },
+    [executeTransaction]
+  );
+
+  // PTB: Jant oluştur ve tak (tek işlemde)
+  const createAndInstallWheels = useCallback(
+    async (carId: string, style: string) => {
+      const tx = new Transaction();
+
+      // 1. Jantı oluştur
+      const [newWheels] = tx.moveCall({
+        target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.CREATE_WHEELS}`,
+        arguments: [tx.pure.string(style)],
+      });
+
+      // 2. Jantı arabaya tak (ilk adımın çıktısını girdi olarak kullan)
+      tx.moveCall({
+        target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.INSTALL_WHEELS}`,
+        arguments: [tx.object(carId), newWheels],
+      });
+
+      return executeTransaction(tx);
+    },
+    [executeTransaction]
+  );
+
+  // PTB: Tampon oluştur ve tak (tek işlemde)
+  const createAndInstallBumper = useCallback(
+    async (carId: string, shape: string) => {
+      const tx = new Transaction();
+
+      // 1. Tamponu oluştur
+      const [newBumper] = tx.moveCall({
+        target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.CREATE_BUMPER}`,
+        arguments: [tx.pure.string(shape)],
+      });
+
+      // 2. Tamponu arabaya tak (ilk adımın çıktısını girdi olarak kullan)
+      tx.moveCall({
+        target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.INSTALL_BUMPER}`,
+        arguments: [tx.object(carId), newBumper],
+      });
+
+      return executeTransaction(tx);
     },
     [executeTransaction]
   );
@@ -190,5 +234,7 @@ export function useCarTransaction() {
     installBumper,
     removeWheels,
     removeBumper,
+    createAndInstallWheels,
+    createAndInstallBumper,
   };
 }

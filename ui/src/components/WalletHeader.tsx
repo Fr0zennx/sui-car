@@ -4,7 +4,7 @@ import {
   useCurrentAccount,
   useSignAndExecuteTransactionBlock,
 } from '@mysten/dapp-kit';
-import './WalletProvider.css';
+import './WalletHeader.css';
 
 interface WalletProviderProps {
   children: ReactNode;

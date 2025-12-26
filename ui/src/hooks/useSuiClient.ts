@@ -41,11 +41,22 @@ export async function getCarData(carId: string) {
 
     if (response.data?.content?.dataType === 'moveObject') {
       const fields = (response.data.content as any).fields;
+      
+      // Option veri okuma mantığı:
+      // Kontraktın car.wheels ve car.bumper Option<Wheels> ve Option<Bumper> olduğundan
+      // Bu veriler Vec yapısında geliyor (boş Vec = None, 1 elemanlı Vec = Some)
+      
+      const wheelsData = fields.wheels?.fields?.vec?.[0];
+      const bumperData = fields.bumper?.fields?.vec?.[0];
+      
       return {
+        id: carId,
         model: fields.model,
         color: fields.color,
-        wheels: fields.wheels,
-        bumper: fields.bumper,
+        hasWheels: wheelsData !== undefined,
+        wheels: wheelsData,
+        hasBumper: bumperData !== undefined,
+        bumper: bumperData,
       };
     }
     return null;
