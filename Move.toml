@@ -6,4 +6,4 @@ edition = "2024.beta"
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
 
 [addresses]
-car_game = "0x0"
+car_game = "0x601309dfba134af0a8885ee9296adc512762bac597fad2da5d08978bfda0cc99"
