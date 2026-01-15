@@ -4,6 +4,7 @@ import { WalletHeader } from './components/WalletHeader';
 import { useCarTransaction } from './hooks/useCarTransaction';
 import { useUserAssets, CarObject } from './hooks/useUserAssets';
 import ModelViewer from './components/ModelViewer';
+import LightRays from './components/LightRays';
 import { Wrench, X, ChevronDown, Palette, Plus, Package } from 'lucide-react';
 import './App.css';
 
@@ -49,7 +50,7 @@ function App() {
 
   const handleColorChange = async (newColor: string) => {
     if (!selectedCar || !account?.address) {
-      showNotification('Lütfen önce cüzdan bağlayın', 'error');
+      showNotification('Please connect your wallet first', 'error');
       return;
     }
 
@@ -57,120 +58,120 @@ function App() {
     try {
       const result = await repaintCar(selectedCar.id, newColor);
       if (result.status === 'success') {
-        showNotification(`Araba rengi değiştirildi!`, 'success');
+        showNotification(`Car color changed!`, 'success');
         setSelectedCar((prev) => prev ? { ...prev, color: newColor } : null);
         setTimeout(() => refreshAssets(), 1500);
       } else {
-        showNotification(`İşlem başarısız: ${result.error}`, 'error');
+        showNotification(`Transaction failed: ${result.error}`, 'error');
       }
     } catch (error) {
-      showNotification('Renklendir işleminde hata!', 'error');
+      showNotification('Error changing color!', 'error');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Yeni jant oluştur (envantere ekle)
+  // Create new wheels (add to inventory)
   const handleCreateWheels = async (part: Part) => {
     if (!account?.address) {
-      showNotification('Lütfen önce cüzdan bağlayın', 'error');
+      showNotification('Please connect your wallet first', 'error');
       return;
     }
 
     setIsProcessing(true);
     try {
-      showNotification(`${part.name} oluşturuluyor...`, 'info');
+      showNotification(`Creating ${part.name}...`, 'info');
       const result = await createWheels(part.style);
       
       if (result.status === 'success') {
-        showNotification(`${part.name} envanterinize eklendi!`, 'success');
+        showNotification(`${part.name} added to your inventory!`, 'success');
         setTimeout(() => refreshAssets(), 2000);
       } else {
-        showNotification(`İşlem başarısız: ${result.error}`, 'error');
+        showNotification(`Transaction failed: ${result.error}`, 'error');
       }
     } catch (error) {
-      showNotification('Jant oluşturma işleminde hata!', 'error');
+      showNotification('Error creating wheels!', 'error');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Mevcut jantı arabaya tak
+  // Install wheels to car
   const handleInstallWheels = async (wheelId: string, style: string) => {
     if (!selectedCar || !account?.address) {
-      showNotification('Lütfen önce cüzdan bağlayın', 'error');
+      showNotification('Please connect your wallet first', 'error');
       return;
     }
 
     setIsProcessing(true);
     try {
-      showNotification(`Jant takılıyor...`, 'info');
+      showNotification(`Installing wheels...`, 'info');
       const result = await installWheels(selectedCar.id, wheelId);
       
       if (result.status === 'success') {
-        showNotification(`Jant başarıyla takıldı!`, 'success');
+        showNotification(`Wheels installed successfully!`, 'success');
         setSelectedCar((prev) => 
           prev ? { ...prev, hasWheels: true, wheelStyle: style } : null
         );
         setTimeout(() => refreshAssets(), 2000);
       } else {
-        showNotification(`İşlem başarısız: ${result.error}`, 'error');
+        showNotification(`Transaction failed: ${result.error}`, 'error');
       }
     } catch (error) {
-      showNotification('Jant takma işleminde hata!', 'error');
+      showNotification('Error installing wheels!', 'error');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Yeni tampon oluştur (envantere ekle)
+  // Create new bumper (add to inventory)
   const handleCreateBumper = async (part: Part) => {
     if (!account?.address) {
-      showNotification('Lütfen önce cüzdan bağlayın', 'error');
+      showNotification('Please connect your wallet first', 'error');
       return;
     }
 
     setIsProcessing(true);
     try {
-      showNotification(`${part.name} oluşturuluyor...`, 'info');
+      showNotification(`Creating ${part.name}...`, 'info');
       const result = await createBumper(part.style);
       
       if (result.status === 'success') {
-        showNotification(`${part.name} envanterinize eklendi!`, 'success');
+        showNotification(`${part.name} added to your inventory!`, 'success');
         setTimeout(() => refreshAssets(), 2000);
       } else {
-        showNotification(`İşlem başarısız: ${result.error}`, 'error');
+        showNotification(`Transaction failed: ${result.error}`, 'error');
       }
     } catch (error) {
-      showNotification('Tampon oluşturma işleminde hata!', 'error');
+      showNotification('Error creating bumper!', 'error');
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Mevcut tamponu arabaya tak
+  // Install bumper to car
   const handleInstallBumper = async (bumperId: string, material: string) => {
     if (!selectedCar || !account?.address) {
-      showNotification('Lütfen önce cüzdan bağlayın', 'error');
+      showNotification('Please connect your wallet first', 'error');
       return;
     }
 
     setIsProcessing(true);
     try {
-      showNotification(`Tampon takılıyor...`, 'info');
+      showNotification(`Installing bumper...`, 'info');
       const result = await installBumper(selectedCar.id, bumperId);
       
       if (result.status === 'success') {
-        showNotification(`Tampon başarıyla takıldı!`, 'success');
+        showNotification(`Bumper installed successfully!`, 'success');
         setSelectedCar((prev) => 
           prev ? { ...prev, hasBumper: true, bumperShape: material } : null
         );
         setTimeout(() => refreshAssets(), 2000);
       } else {
-        showNotification(`İşlem başarısız: ${result.error}`, 'error');
+        showNotification(`Transaction failed: ${result.error}`, 'error');
       }
     } catch (error) {
-      showNotification('Tampon takma işleminde hata!', 'error');
+      showNotification('Error installing bumper!', 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -178,7 +179,7 @@ function App() {
 
   const handleRemoveWheels = async () => {
     if (!selectedCar || !account?.address) {
-      showNotification('Lütfen önce cüzdan bağlayın', 'error');
+      showNotification('Please connect your wallet first', 'error');
       return;
     }
 
@@ -186,16 +187,16 @@ function App() {
     try {
       const result = await removeWheels(selectedCar.id);
       if (result.status === 'success') {
-        showNotification('Jant başarıyla çıkartıldı!', 'success');
+        showNotification('Wheels removed successfully!', 'success');
         setSelectedCar((prev) => 
           prev ? { ...prev, hasWheels: false, wheelStyle: undefined } : null
         );
         setTimeout(() => refreshAssets(), 1000);
       } else {
-        showNotification('Jant çıkartma başarısız oldu', 'error');
+        showNotification('Failed to remove wheels', 'error');
       }
     } catch (error) {
-      showNotification('Jant çıkartma işleminde hata!', 'error');
+      showNotification('Error removing wheels!', 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -203,7 +204,7 @@ function App() {
 
   const handleRemoveBumper = async () => {
     if (!selectedCar || !account?.address) {
-      showNotification('Lütfen önce cüzdan bağlayın', 'error');
+      showNotification('Please connect your wallet first', 'error');
       return;
     }
 
@@ -211,16 +212,16 @@ function App() {
     try {
       const result = await removeBumper(selectedCar.id);
       if (result.status === 'success') {
-        showNotification('Tampon başarıyla çıkartıldı!', 'success');
+        showNotification('Bumper removed successfully!', 'success');
         setSelectedCar((prev) => 
           prev ? { ...prev, hasBumper: false, bumperShape: undefined } : null
         );
         setTimeout(() => refreshAssets(), 1000);
       } else {
-        showNotification('Tampon çıkartma başarısız oldu', 'error');
+        showNotification('Failed to remove bumper', 'error');
       }
     } catch (error) {
-      showNotification('Tampon çıkartma işleminde hata!', 'error');
+      showNotification('Error removing bumper!', 'error');
     } finally {
       setIsProcessing(false);
     }
@@ -231,42 +232,59 @@ function App() {
     try {
       const result = await mintCar('classic car', '#FF0000');
       if (result.status === 'success') {
-        showNotification('Araba başarıyla oluşturuldu!', 'success');
+        showNotification('Car created successfully!', 'success');
         setTimeout(() => refreshAssets(), 1500);
       } else {
-        showNotification(`İşlem başarısız: ${result.error}`, 'error');
+        showNotification(`Transaction failed: ${result.error}`, 'error');
       }
     } catch (error) {
-      showNotification('Araba oluşturma işleminde hata!', 'error');
+      showNotification('Error creating car!', 'error');
     } finally {
       setIsProcessing(false);
     }
   };
 
   const colorOptions = [
-    { name: 'Kırmızı', value: '#FF0000' },
-    { name: 'Mavi', value: '#0080FF' },
-    { name: 'Yeşil', value: '#00FF00' },
-    { name: 'Sarı', value: '#FFFF00' },
-    { name: 'Turuncu', value: '#FF8000' },
-    { name: 'Mor', value: '#8000FF' },
-    { name: 'Siyah', value: '#000000' },
-    { name: 'Beyaz', value: '#FFFFFF' },
+    { name: 'Red', value: '#FF0000' },
+    { name: 'Blue', value: '#0080FF' },
+    { name: 'Green', value: '#00FF00' },
+    { name: 'Yellow', value: '#FFFF00' },
+    { name: 'Orange', value: '#FF8000' },
+    { name: 'Purple', value: '#8000FF' },
+    { name: 'Black', value: '#000000' },
+    { name: 'White', value: '#FFFFFF' },
   ];
 
   const wheelOptions: Part[] = [
-    { name: 'Spor Jant', style: 'Sport' },
-    { name: 'Klasik Jant', style: 'Classic' },
-    { name: 'Offset Jant', style: 'Offset' },
+    { name: 'Sport Wheels', style: 'Sport' },
+    { name: 'Classic Wheels', style: 'Classic' },
+    { name: 'Offset Wheels', style: 'Offset' },
   ];
 
   const bumperOptions: Part[] = [
-    { name: 'Agresif Tampon', style: 'Aggressive' },
-    { name: 'Standart Tampon', style: 'Standard' },
+    { name: 'Aggressive Bumper', style: 'Aggressive' },
+    { name: 'Standard Bumper', style: 'Standard' },
   ];
 
   return (
     <div className="app-container">
+      {/* Light Rays Effect - Top */}
+      <div className="light-rays-wrapper">
+        <LightRays
+          raysOrigin="top-center"
+          raysColor="#00d9ff"
+          raysSpeed={0.8}
+          lightSpread={1.2}
+          rayLength={1.5}
+          followMouse={true}
+          mouseInfluence={0.08}
+          noiseAmount={0.05}
+          distortion={0.03}
+          fadeDistance={1.2}
+          saturation={1.2}
+        />
+      </div>
+
       {/* Wallet Header - Top Right */}
       <WalletHeader />
 
@@ -319,32 +337,21 @@ function App() {
 
           {!account?.address ? (
             <div className="tuning-empty">
-              <p>Araç özelleştirmek için cüzdan bağlayın</p>
+              <p>Connect wallet to customize your car</p>
             </div>
           ) : cars.length === 0 ? (
             <div className="tuning-empty">
-              <p>Henüz arabanız yok</p>
+              <p>You don't have a car yet</p>
               <button 
                 className="mint-btn"
                 onClick={handleMintCar}
                 disabled={isProcessing}
               >
-                ✨ Araba Oluştur
+                ✨ Create Car
               </button>
             </div>
           ) : (
             <>
-              {/* Current Car Info */}
-              {selectedCar && (
-                <div className="car-info-mini">
-                  <span className="car-model">{selectedCar.model}</span>
-                  <span 
-                    className="car-color-dot" 
-                    style={{ backgroundColor: selectedCar.color }}
-                  />
-                </div>
-              )}
-
               {/* Color Picker */}
               <div className="menu-item">
                 <button
@@ -352,7 +359,7 @@ function App() {
                   onClick={() => setShowMenu(showMenu === 'color' ? null : 'color')}
                 >
                   <Palette size={18} />
-                  <span>Renk</span>
+                  <span>Color</span>
                   <ChevronDown size={16} className="menu-chevron" />
                 </button>
 
@@ -383,7 +390,7 @@ function App() {
                   onClick={() => setShowMenu(showMenu === 'wheels' ? null : 'wheels')}
                 >
                   <Wrench size={18} />
-                  <span>Jant</span>
+                  <span>Wheels</span>
                   {selectedCar?.hasWheels && (
                     <span className="installed-badge">{selectedCar.wheelStyle}</span>
                   )}
@@ -399,16 +406,16 @@ function App() {
                         disabled={isProcessing}
                       >
                         <X size={16} />
-                        <span>Jantı Çıkart</span>
+                        <span>Remove Wheels</span>
                       </button>
                     ) : (
                       <>
-                        {/* Mevcut jantlar */}
+                        {/* Available wheels */}
                         {wheels.length > 0 && (
                           <div className="inventory-section">
                             <div className="section-title">
                               <Package size={14} />
-                              <span>Envanterdeki Jantlar</span>
+                              <span>Inventory Wheels</span>
                             </div>
                             <div className="parts-list">
                               {wheels.map((wheel) => (
@@ -426,11 +433,11 @@ function App() {
                           </div>
                         )}
 
-                        {/* Yeni jant oluştur */}
+                        {/* Create new wheels */}
                         <div className="create-section">
                           <div className="section-title">
                             <Plus size={14} />
-                            <span>Yeni Jant Oluştur</span>
+                            <span>Create New Wheels</span>
                           </div>
                           <div className="parts-list">
                             {wheelOptions.map((part) => (
@@ -452,87 +459,11 @@ function App() {
                 )}
               </div>
 
-              {/* Bumper */}
-              <div className="menu-item">
-                <button
-                  className={`menu-header ${showMenu === 'bumper' ? 'open' : ''}`}
-                  onClick={() => setShowMenu(showMenu === 'bumper' ? null : 'bumper')}
-                >
-                  <Wrench size={18} />
-                  <span>Tampon</span>
-                  {selectedCar?.hasBumper && (
-                    <span className="installed-badge">{selectedCar.bumperShape}</span>
-                  )}
-                  <ChevronDown size={16} className="menu-chevron" />
-                </button>
-
-                {showMenu === 'bumper' && (
-                  <div className="menu-content">
-                    {selectedCar?.hasBumper ? (
-                      <button
-                        className="remove-part-btn"
-                        onClick={handleRemoveBumper}
-                        disabled={isProcessing}
-                      >
-                        <X size={16} />
-                        <span>Tamponu Çıkart</span>
-                      </button>
-                    ) : (
-                      <>
-                        {/* Mevcut tamponlar */}
-                        {bumpers.length > 0 && (
-                          <div className="inventory-section">
-                            <div className="section-title">
-                              <Package size={14} />
-                              <span>Envanterdeki Tamponlar</span>
-                            </div>
-                            <div className="parts-list">
-                              {bumpers.map((bumper) => (
-                                <button
-                                  key={bumper.id}
-                                  className="part-btn inventory-item"
-                                  onClick={() => handleInstallBumper(bumper.id, bumper.material)}
-                                  disabled={isProcessing}
-                                >
-                                  <span>{bumper.material}</span>
-                                  <span className="part-icon">→</span>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Yeni tampon oluştur */}
-                        <div className="create-section">
-                          <div className="section-title">
-                            <Plus size={14} />
-                            <span>Yeni Tampon Oluştur</span>
-                          </div>
-                          <div className="parts-list">
-                            {bumperOptions.map((part) => (
-                              <button
-                                key={part.style}
-                                className="part-btn create-btn"
-                                onClick={() => handleCreateBumper(part)}
-                                disabled={isProcessing}
-                              >
-                                <span>{part.name}</span>
-                                <span className="part-icon">+</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-
               {/* Loading */}
               {isProcessing && (
                 <div className="loading-indicator">
                   <div className="spinner"></div>
-                  <span>İşlem devam ediyor...</span>
+                  <span>Processing...</span>
                 </div>
               )}
             </>
