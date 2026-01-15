@@ -3,7 +3,8 @@ import { useCurrentAccount } from '@mysten/dapp-kit';
 import { WalletHeader } from './components/WalletHeader';
 import { useCarTransaction } from './hooks/useCarTransaction';
 import { useUserAssets, CarObject } from './hooks/useUserAssets';
-import { Wrench, Zap, X, ChevronDown } from 'lucide-react';
+import ModelViewer from './components/ModelViewer';
+import { Wrench, X, ChevronDown, Palette } from 'lucide-react';
 import './App.css';
 
 interface Part {
@@ -21,10 +22,6 @@ function App() {
   const { 
     isLoading: txLoading, 
     repaintCar, 
-    createWheels, 
-    createBumper, 
-    installWheels, 
-    installBumper, 
     removeWheels, 
     removeBumper, 
     createAndInstallWheels,
@@ -33,8 +30,6 @@ function App() {
   } = useCarTransaction();
   const { 
     cars, 
-    wheels, 
-    bumpers, 
     isLoading: assetsLoading, 
     refreshAssets 
   } = useUserAssets();
@@ -65,7 +60,7 @@ function App() {
     try {
       const result = await repaintCar(selectedCar.id, newColor);
       if (result.status === 'success') {
-        showNotification(`Araba rengini değiştirildi!`, 'success');
+        showNotification(`Araba rengi değiştirildi!`, 'success');
         setSelectedCar((prev) => prev ? { ...prev, color: newColor } : null);
         setTimeout(() => refreshAssets(), 1500);
       } else {
@@ -87,7 +82,6 @@ function App() {
     setIsProcessing(true);
     try {
       showNotification(`${part.name} takılıyor...`, 'info');
-      // PTB kullanarak oluşturma ve takma işlemini bir imzada birleştir
       const result = await createAndInstallWheels(selectedCar.id, part.style);
       
       if (result.status === 'success') {
@@ -115,7 +109,6 @@ function App() {
     setIsProcessing(true);
     try {
       showNotification(`${part.name} takılıyor...`, 'info');
-      // PTB kullanarak oluşturma ve takma işlemini bir imzada birleştir
       const result = await createAndInstallBumper(selectedCar.id, part.style);
       
       if (result.status === 'success') {
@@ -184,6 +177,23 @@ function App() {
     }
   };
 
+  const handleMintCar = async () => {
+    setIsProcessing(true);
+    try {
+      const result = await mintCar('Tesla', '#FF0000');
+      if (result.status === 'success') {
+        showNotification('Araba başarıyla oluşturuldu!', 'success');
+        setTimeout(() => refreshAssets(), 1500);
+      } else {
+        showNotification(`İşlem başarısız: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      showNotification('Araba oluşturma işleminde hata!', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const colorOptions = [
     { name: 'Kırmızı', value: '#FF0000' },
     { name: 'Mavi', value: '#0080FF' },
@@ -210,149 +220,92 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* Wallet Header - Top Right */}
       <WalletHeader />
 
-      {!account?.address ? (
-        <div className="no-wallet">
-          <div className="no-wallet-content">
-            <h2>🔗 Cüzdan Bağlanması Gereklidir</h2>
-            <p>Lütfen yukarıdaki "Connect" butonunu kullanarak cüzdan bağlayın.</p>
-            <small>Sui Testnet ağında çalışmalıdır.</small>
-          </div>
+      {/* Notification */}
+      {notification && (
+        <div className={`notification notification-${notification.type}`}>
+          <span className="notification-text">{notification.message}</span>
+          <button className="notification-close" onClick={() => setNotification(null)}>
+            ×
+          </button>
         </div>
-      ) : cars.length === 0 ? (
-        <div className="no-cars">
-          <div className="no-cars-content">
-            <h2>🚗 Arabanız Yok</h2>
-            <p>Henüz bir araba oluşturmadınız.</p>
-            <button 
-              className="create-car-btn"
-              onClick={() => {
-                setIsProcessing(true);
-                mintCar('Tesla', '#FF0000').then((result) => {
-                  if (result.status === 'success') {
-                    showNotification('Araba başarıyla oluşturuldu!', 'success');
-                    setTimeout(() => refreshAssets(), 1500);
-                  }
-                  setIsProcessing(false);
-                });
-              }}
-              disabled={isProcessing}
-            >
-              ✨ İlk Arabamı Oluştur
-            </button>
-          </div>
+      )}
+
+      {/* Main Content */}
+      <div className="main-content">
+        {/* 3D Model Viewer - Center */}
+        <div className="model-container">
+          <ModelViewer
+            url="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/ToyCar/glTF-Binary/ToyCar.glb"
+            width="100%"
+            height="100%"
+            autoRotate={true}
+            autoRotateSpeed={0.15}
+            enableMouseParallax={true}
+            enableManualRotation={true}
+            enableHoverRotation={false}
+            enableManualZoom={true}
+            defaultZoom={1.5}
+            minZoomDistance={0.8}
+            maxZoomDistance={4}
+            defaultRotationX={0}
+            defaultRotationY={15}
+            environmentPreset="night"
+            ambientIntensity={0.5}
+            keyLightIntensity={1.2}
+            fillLightIntensity={0.6}
+            rimLightIntensity={0.9}
+            showScreenshotButton={false}
+            fadeIn={true}
+          />
         </div>
-      ) : (
-        <main className="garage-main">
-          {/* Bildirim */}
-          {notification && (
-            <div className={`notification notification-${notification.type}`}>
-              <span className="notification-text">{notification.message}</span>
-              <button className="notification-close" onClick={() => setNotification(null)}>
-                ×
+
+        {/* Tuning Menu - Right Side */}
+        <div className="tuning-panel">
+          <div className="tuning-header">
+            <Wrench size={24} />
+            <h2>Tuning</h2>
+          </div>
+
+          {!account?.address ? (
+            <div className="tuning-empty">
+              <p>Araç özelleştirmek için cüzdan bağlayın</p>
+            </div>
+          ) : cars.length === 0 ? (
+            <div className="tuning-empty">
+              <p>Henüz arabanız yok</p>
+              <button 
+                className="mint-btn"
+                onClick={handleMintCar}
+                disabled={isProcessing}
+              >
+                ✨ Araba Oluştur
               </button>
             </div>
-          )}
-
-          {/* Araba Seçici */}
-          <div className="cars-header">
-            <h2>🚗 Arabaların ({cars.length})</h2>
-            <div className="cars-selector">
-              {cars.map((car) => (
-                <button
-                  key={car.id}
-                  className={`car-select-btn ${selectedCar?.id === car.id ? 'active' : ''}`}
-                  onClick={() => setSelectedCar(car)}
-                >
-                  <span className="model-text">{car.model}</span>
-                  <span className="color-indicator" style={{ backgroundColor: car.color }}></span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="garage-container">
-            {/* Sol: Araba Görünümü */}
-            <section className="car-display-section">
+          ) : (
+            <>
+              {/* Current Car Info */}
               {selectedCar && (
-                <div className="car-display-card" style={{ backgroundColor: selectedCar.color }}>
-                  <div className="car-header-info">
-                    <h3>{selectedCar.model}</h3>
-                    <span className="car-color-badge">{selectedCar.color}</span>
-                  </div>
-
-                  {/* Araba Görseli */}
-                  <div className="car-visual">
-                    <div className="car-body">
-                      <div className="car-top"></div>
-                      <div className="car-bottom"></div>
-                    </div>
-                  </div>
-
-                  {/* Slotlar */}
-                  <div className="slots-grid">
-                    {/* Jant Slotu */}
-                    <div className="slot">
-                      <div className="slot-label">⚙️ Jant</div>
-                      <div className="slot-content">
-                        {selectedCar.hasWheels ? (
-                          <div className="slot-installed">
-                            <span className="part-name">{selectedCar.wheelStyle}</span>
-                            <button 
-                              className="remove-btn"
-                              onClick={handleRemoveWheels}
-                              disabled={isProcessing}
-                              title="Jantı Çıkart"
-                            >
-                              <X size={16} />
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="slot-empty">Boş Slot</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Tampon Slotu */}
-                    <div className="slot">
-                      <div className="slot-label">🛡️ Tampon</div>
-                      <div className="slot-content">
-                        {selectedCar.hasBumper ? (
-                          <div className="slot-installed">
-                            <span className="part-name">{selectedCar.bumperShape}</span>
-                            <button 
-                              className="remove-btn"
-                              onClick={handleRemoveBumper}
-                              disabled={isProcessing}
-                              title="Tamponu Çıkart"
-                            >
-                              <X size={16} />
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="slot-empty">Boş Slot</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                <div className="car-info-mini">
+                  <span className="car-model">{selectedCar.model}</span>
+                  <span 
+                    className="car-color-dot" 
+                    style={{ backgroundColor: selectedCar.color }}
+                  />
                 </div>
               )}
-            </section>
 
-            {/* Sağ: Özelleştirme Menüsü */}
-            <section className="tuning-section">
-              <h2>🎨 Tuning Menüsü</h2>
-
-              {/* Renk Seçici */}
+              {/* Color Picker */}
               <div className="menu-item">
                 <button
                   className={`menu-header ${showMenu === 'color' ? 'open' : ''}`}
                   onClick={() => setShowMenu(showMenu === 'color' ? null : 'color')}
                 >
-                  <Zap size={20} />
-                  <span>Renk Değiştir</span>
-                  <ChevronDown size={18} className="menu-chevron" />
+                  <Palette size={18} />
+                  <span>Renk</span>
+                  <ChevronDown size={16} className="menu-chevron" />
                 </button>
 
                 {showMenu === 'color' && (
@@ -375,77 +328,105 @@ function App() {
                 )}
               </div>
 
-              {/* Jant Dükkanı */}
+              {/* Wheels */}
               <div className="menu-item">
                 <button
                   className={`menu-header ${showMenu === 'wheels' ? 'open' : ''}`}
                   onClick={() => setShowMenu(showMenu === 'wheels' ? null : 'wheels')}
                 >
-                  <Wrench size={20} />
-                  <span>Jant Dükkânı</span>
-                  <ChevronDown size={18} className="menu-chevron" />
+                  <Wrench size={18} />
+                  <span>Jant</span>
+                  {selectedCar?.hasWheels && (
+                    <span className="installed-badge">{selectedCar.wheelStyle}</span>
+                  )}
+                  <ChevronDown size={16} className="menu-chevron" />
                 </button>
 
                 {showMenu === 'wheels' && (
                   <div className="menu-content">
-                    <div className="parts-list">
-                      {wheelOptions.map((part) => (
-                        <button
-                          key={part.style}
-                          className="part-btn"
-                          onClick={() => handleCreateAndInstallWheels(part)}
-                          disabled={isProcessing || selectedCar?.hasWheels}
-                        >
-                          <span className="part-btn-name">{part.name}</span>
-                          <span className="part-btn-icon">➕</span>
-                        </button>
-                      ))}
-                    </div>
+                    {selectedCar?.hasWheels ? (
+                      <button
+                        className="remove-part-btn"
+                        onClick={handleRemoveWheels}
+                        disabled={isProcessing}
+                      >
+                        <X size={16} />
+                        <span>Jantı Çıkart</span>
+                      </button>
+                    ) : (
+                      <div className="parts-list">
+                        {wheelOptions.map((part) => (
+                          <button
+                            key={part.style}
+                            className="part-btn"
+                            onClick={() => handleCreateAndInstallWheels(part)}
+                            disabled={isProcessing}
+                          >
+                            <span>{part.name}</span>
+                            <span className="part-icon">+</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Tampon Dükkanı */}
+              {/* Bumper */}
               <div className="menu-item">
                 <button
                   className={`menu-header ${showMenu === 'bumper' ? 'open' : ''}`}
                   onClick={() => setShowMenu(showMenu === 'bumper' ? null : 'bumper')}
                 >
-                  <Wrench size={20} />
-                  <span>Tampon Dükkânı</span>
-                  <ChevronDown size={18} className="menu-chevron" />
+                  <Wrench size={18} />
+                  <span>Tampon</span>
+                  {selectedCar?.hasBumper && (
+                    <span className="installed-badge">{selectedCar.bumperShape}</span>
+                  )}
+                  <ChevronDown size={16} className="menu-chevron" />
                 </button>
 
                 {showMenu === 'bumper' && (
                   <div className="menu-content">
-                    <div className="parts-list">
-                      {bumperOptions.map((part) => (
-                        <button
-                          key={part.style}
-                          className="part-btn"
-                          onClick={() => handleCreateAndInstallBumper(part)}
-                          disabled={isProcessing || selectedCar?.hasBumper}
-                        >
-                          <span className="part-btn-name">{part.name}</span>
-                          <span className="part-btn-icon">➕</span>
-                        </button>
-                      ))}
-                    </div>
+                    {selectedCar?.hasBumper ? (
+                      <button
+                        className="remove-part-btn"
+                        onClick={handleRemoveBumper}
+                        disabled={isProcessing}
+                      >
+                        <X size={16} />
+                        <span>Tamponu Çıkart</span>
+                      </button>
+                    ) : (
+                      <div className="parts-list">
+                        {bumperOptions.map((part) => (
+                          <button
+                            key={part.style}
+                            className="part-btn"
+                            onClick={() => handleCreateAndInstallBumper(part)}
+                            disabled={isProcessing}
+                          >
+                            <span>{part.name}</span>
+                            <span className="part-icon">+</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
 
-              {/* Yükleniyor Göstergesi */}
+              {/* Loading */}
               {isProcessing && (
                 <div className="loading-indicator">
                   <div className="spinner"></div>
-                  <p>İşlem devam ediyor...</p>
+                  <span>İşlem devam ediyor...</span>
                 </div>
               )}
-            </section>
-          </div>
-        </main>
-      )}
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
