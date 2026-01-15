@@ -75,6 +75,7 @@ interface ModelInnerProps {
   fadeIn: boolean;
   autoRotate: boolean;
   autoRotateSpeed: number;
+  carColor?: string;
   onLoaded?: () => void;
 }
 
@@ -95,6 +96,7 @@ const ModelInner = ({
   fadeIn,
   autoRotate,
   autoRotateSpeed,
+  carColor,
   onLoaded
 }: ModelInnerProps) => {
   const outer = useRef<THREE.Group>(null);
@@ -113,6 +115,49 @@ const ModelInner = ({
     console.error('Unsupported format:', ext);
     return null;
   }, [url, ext]);
+
+  // Apply car color to body materials
+  useEffect(() => {
+    if (!content || !carColor) return;
+    const color = new THREE.Color(carColor);
+    
+    content.traverse((o: any) => {
+      if (o.isMesh && o.material) {
+        const matName = (o.material.name || '').toLowerCase();
+        const meshName = (o.name || '').toLowerCase();
+        
+        // Exclude parts that shouldn't change color
+        const isExcluded = 
+          matName.includes('wheel') ||
+          matName.includes('tire') ||
+          matName.includes('rubber') ||
+          matName.includes('glass') ||
+          matName.includes('window') ||
+          matName.includes('chrome') ||
+          matName.includes('light') ||
+          matName.includes('headlight') ||
+          matName.includes('taillight') ||
+          matName.includes('rim') ||
+          matName.includes('hub') ||
+          meshName.includes('wheel') ||
+          meshName.includes('tire') ||
+          meshName.includes('glass') ||
+          meshName.includes('window') ||
+          meshName.includes('rim');
+        
+        if (!isExcluded && o.material.color) {
+          // Clone material to avoid affecting cached original
+          if (!o.userData.colorApplied) {
+            o.userData.colorApplied = true;
+            o.material = o.material.clone();
+          }
+          o.material.color.copy(color);
+          o.material.needsUpdate = true;
+        }
+      }
+    });
+    invalidate();
+  }, [content, carColor]);
 
   const pivotW = useRef(new THREE.Vector3());
   useLayoutEffect(() => {
@@ -385,6 +430,7 @@ interface ModelViewerProps {
   fadeIn?: boolean;
   autoRotate?: boolean;
   autoRotateSpeed?: number;
+  carColor?: string;
   onModelLoaded?: () => void;
 }
 
@@ -414,6 +460,7 @@ const ModelViewer = ({
   fadeIn = false,
   autoRotate = false,
   autoRotateSpeed = 0.35,
+  carColor,
   onModelLoaded
 }: ModelViewerProps) => {
   useEffect(() => void useGLTF.preload(url), [url]);
@@ -523,6 +570,7 @@ const ModelViewer = ({
             fadeIn={fadeIn}
             autoRotate={autoRotate}
             autoRotateSpeed={autoRotateSpeed}
+            carColor={carColor}
             onLoaded={onModelLoaded}
           />
         </Suspense>

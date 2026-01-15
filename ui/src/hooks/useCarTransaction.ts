@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import { Transaction } from '@mysten/sui/transactions';
-import { SUI_CONFIG, CONTRACT_FUNCTIONS, GAS_BUDGET } from '../config/blockchain';
+import { SUI_CONFIG, CONTRACT_FUNCTIONS } from '../config/blockchain';
 
 export interface TransactionResult {
   digest: string;
@@ -12,13 +12,11 @@ export interface TransactionResult {
 export function useCarTransaction() {
   const { mutate: signAndExecute } = useSignAndExecuteTransaction();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const executeTransaction = useCallback(
     async (tx: Transaction): Promise<TransactionResult> => {
       return new Promise((resolve) => {
         setIsLoading(true);
-        setError(null);
 
         signAndExecute(
           { transaction: tx },
@@ -32,7 +30,6 @@ export function useCarTransaction() {
             },
             onError: (err) => {
               const errorMessage = err instanceof Error ? err.message : String(err);
-              setError(errorMessage);
               setIsLoading(false);
               resolve({
                 digest: '',
@@ -179,53 +176,8 @@ export function useCarTransaction() {
     [executeTransaction]
   );
 
-  // PTB: Jant oluştur ve tak (tek işlemde)
-  const createAndInstallWheels = useCallback(
-    async (carId: string, style: string) => {
-      const tx = new Transaction();
-
-      // 1. Jantı oluştur
-      const [newWheels] = tx.moveCall({
-        target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.CREATE_WHEELS}`,
-        arguments: [tx.pure.string(style)],
-      });
-
-      // 2. Jantı arabaya tak (ilk adımın çıktısını girdi olarak kullan)
-      tx.moveCall({
-        target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.INSTALL_WHEELS}`,
-        arguments: [tx.object(carId), newWheels],
-      });
-
-      return executeTransaction(tx);
-    },
-    [executeTransaction]
-  );
-
-  // PTB: Tampon oluştur ve tak (tek işlemde)
-  const createAndInstallBumper = useCallback(
-    async (carId: string, shape: string) => {
-      const tx = new Transaction();
-
-      // 1. Tamponu oluştur
-      const [newBumper] = tx.moveCall({
-        target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.CREATE_BUMPER}`,
-        arguments: [tx.pure.string(shape)],
-      });
-
-      // 2. Tamponu arabaya tak (ilk adımın çıktısını girdi olarak kullan)
-      tx.moveCall({
-        target: `${SUI_CONFIG.PACKAGE_ID}::${SUI_CONFIG.MODULE_NAME}::${CONTRACT_FUNCTIONS.INSTALL_BUMPER}`,
-        arguments: [tx.object(carId), newBumper],
-      });
-
-      return executeTransaction(tx);
-    },
-    [executeTransaction]
-  );
-
   return {
     isLoading,
-    error,
     mintCar,
     repaintCar,
     createWheels,
@@ -234,7 +186,5 @@ export function useCarTransaction() {
     installBumper,
     removeWheels,
     removeBumper,
-    createAndInstallWheels,
-    createAndInstallBumper,
   };
 }

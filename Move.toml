@@ -3,7 +3,7 @@ name = "car_game"
 edition = "2024.beta"
 
 [dependencies]
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "testnet-v1.57.2" }
 
 [addresses]
 car_game = "0x601309dfba134af0a8885ee9296adc512762bac597fad2da5d08978bfda0cc99"

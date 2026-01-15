@@ -72,6 +72,14 @@ module car_game::garage {
         transfer::public_transfer(wheels, tx_context::sender(ctx));
     }
 
+    /// Create wheels and return for PTB usage
+    public fun new_wheels(style: vector<u8>, ctx: &mut TxContext): Wheels {
+        Wheels {
+            id: object::new(ctx),
+            style: string::utf8(style),
+        }
+    }
+
     /// Install wheels into the car. If the car already has wheels, 
     /// the old ones are sent back to the owner.
     public entry fun install_wheels(car: &mut Car, new_wheels: Wheels, ctx: &mut TxContext) {
@@ -109,5 +117,42 @@ module car_game::garage {
             material: string::utf8(material),
         };
         transfer::public_transfer(bumper, tx_context::sender(ctx));
+    }
+
+    /// Create bumper and return for PTB usage
+    public fun new_bumper(material: vector<u8>, ctx: &mut TxContext): Bumper {
+        Bumper {
+            id: object::new(ctx),
+            material: string::utf8(material),
+        }
+    }
+
+    /// Install bumper into the car. If the car already has bumper,
+    /// the old one is sent back to the owner.
+    public entry fun install_bumper(car: &mut Car, new_bumper: Bumper, ctx: &mut TxContext) {
+        if (option::is_some(&car.bumper)) {
+            let old_bumper = option::extract(&mut car.bumper);
+            transfer::public_transfer(old_bumper, tx_context::sender(ctx));
+        };
+
+        option::fill(&mut car.bumper, new_bumper);
+
+        event::emit(CarModifiedEvent {
+            car_id: object::uid_to_inner(&car.id),
+            action_type: string::utf8(b"Install Bumper"),
+        });
+    }
+
+    /// Remove bumper from the car and send it to the owner's wallet
+    public entry fun remove_bumper(car: &mut Car, ctx: &mut TxContext) {
+        assert!(option::is_some(&car.bumper), ERR_NO_BUMPER_TO_REMOVE);
+
+        let bumper = option::extract(&mut car.bumper);
+        transfer::public_transfer(bumper, tx_context::sender(ctx));
+
+        event::emit(CarModifiedEvent {
+            car_id: object::uid_to_inner(&car.id),
+            action_type: string::utf8(b"Remove Bumper"),
+        });
     }
 }

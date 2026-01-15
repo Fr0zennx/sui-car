@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useCurrentAccount } from '@mysten/dapp-kit';
 import { WalletHeader } from './components/WalletHeader';
 import { useCarTransaction } from './hooks/useCarTransaction';
 import { useUserAssets, CarObject } from './hooks/useUserAssets';
 import ModelViewer from './components/ModelViewer';
-import { Wrench, X, ChevronDown, Palette } from 'lucide-react';
+import { Wrench, X, ChevronDown, Palette, Plus, Package } from 'lucide-react';
 import './App.css';
 
 interface Part {
@@ -20,19 +20,16 @@ interface Notification {
 function App() {
   const account = useCurrentAccount();
   const { 
-    isLoading: txLoading, 
     repaintCar, 
     removeWheels, 
     removeBumper, 
-    createAndInstallWheels,
-    createAndInstallBumper,
+    createWheels,
+    createBumper,
+    installWheels,
+    installBumper,
     mintCar 
   } = useCarTransaction();
-  const { 
-    cars, 
-    isLoading: assetsLoading, 
-    refreshAssets 
-  } = useUserAssets();
+  const { cars, wheels, bumpers, refreshAssets } = useUserAssets();
   
   const [selectedCar, setSelectedCar] = useState<CarObject | null>(null);
   const [notification, setNotification] = useState<Notification | null>(null);
@@ -73,7 +70,33 @@ function App() {
     }
   };
 
-  const handleCreateAndInstallWheels = async (part: Part) => {
+  // Yeni jant oluştur (envantere ekle)
+  const handleCreateWheels = async (part: Part) => {
+    if (!account?.address) {
+      showNotification('Lütfen önce cüzdan bağlayın', 'error');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      showNotification(`${part.name} oluşturuluyor...`, 'info');
+      const result = await createWheels(part.style);
+      
+      if (result.status === 'success') {
+        showNotification(`${part.name} envanterinize eklendi!`, 'success');
+        setTimeout(() => refreshAssets(), 2000);
+      } else {
+        showNotification(`İşlem başarısız: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      showNotification('Jant oluşturma işleminde hata!', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Mevcut jantı arabaya tak
+  const handleInstallWheels = async (wheelId: string, style: string) => {
     if (!selectedCar || !account?.address) {
       showNotification('Lütfen önce cüzdan bağlayın', 'error');
       return;
@@ -81,13 +104,13 @@ function App() {
 
     setIsProcessing(true);
     try {
-      showNotification(`${part.name} takılıyor...`, 'info');
-      const result = await createAndInstallWheels(selectedCar.id, part.style);
+      showNotification(`Jant takılıyor...`, 'info');
+      const result = await installWheels(selectedCar.id, wheelId);
       
       if (result.status === 'success') {
-        showNotification(`${part.name} başarıyla takıldı!`, 'success');
+        showNotification(`Jant başarıyla takıldı!`, 'success');
         setSelectedCar((prev) => 
-          prev ? { ...prev, hasWheels: true, wheelStyle: part.style } : null
+          prev ? { ...prev, hasWheels: true, wheelStyle: style } : null
         );
         setTimeout(() => refreshAssets(), 2000);
       } else {
@@ -100,7 +123,33 @@ function App() {
     }
   };
 
-  const handleCreateAndInstallBumper = async (part: Part) => {
+  // Yeni tampon oluştur (envantere ekle)
+  const handleCreateBumper = async (part: Part) => {
+    if (!account?.address) {
+      showNotification('Lütfen önce cüzdan bağlayın', 'error');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      showNotification(`${part.name} oluşturuluyor...`, 'info');
+      const result = await createBumper(part.style);
+      
+      if (result.status === 'success') {
+        showNotification(`${part.name} envanterinize eklendi!`, 'success');
+        setTimeout(() => refreshAssets(), 2000);
+      } else {
+        showNotification(`İşlem başarısız: ${result.error}`, 'error');
+      }
+    } catch (error) {
+      showNotification('Tampon oluşturma işleminde hata!', 'error');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Mevcut tamponu arabaya tak
+  const handleInstallBumper = async (bumperId: string, material: string) => {
     if (!selectedCar || !account?.address) {
       showNotification('Lütfen önce cüzdan bağlayın', 'error');
       return;
@@ -108,13 +157,13 @@ function App() {
 
     setIsProcessing(true);
     try {
-      showNotification(`${part.name} takılıyor...`, 'info');
-      const result = await createAndInstallBumper(selectedCar.id, part.style);
+      showNotification(`Tampon takılıyor...`, 'info');
+      const result = await installBumper(selectedCar.id, bumperId);
       
       if (result.status === 'success') {
-        showNotification(`${part.name} başarıyla takıldı!`, 'success');
+        showNotification(`Tampon başarıyla takıldı!`, 'success');
         setSelectedCar((prev) => 
-          prev ? { ...prev, hasBumper: true, bumperShape: part.style } : null
+          prev ? { ...prev, hasBumper: true, bumperShape: material } : null
         );
         setTimeout(() => refreshAssets(), 2000);
       } else {
@@ -180,7 +229,7 @@ function App() {
   const handleMintCar = async () => {
     setIsProcessing(true);
     try {
-      const result = await mintCar('Tesla', '#FF0000');
+      const result = await mintCar('classic car', '#FF0000');
       if (result.status === 'success') {
         showNotification('Araba başarıyla oluşturuldu!', 'success');
         setTimeout(() => refreshAssets(), 1500);
@@ -216,8 +265,6 @@ function App() {
     { name: 'Standart Tampon', style: 'Standard' },
   ];
 
-  const isLoading = txLoading || assetsLoading || isProcessing;
-
   return (
     <div className="app-container">
       {/* Wallet Header - Top Right */}
@@ -247,8 +294,8 @@ function App() {
             enableManualRotation={true}
             enableHoverRotation={false}
             enableManualZoom={true}
-            defaultZoom={1.5}
-            minZoomDistance={0.8}
+            defaultZoom={0.5}
+            minZoomDistance={0.3}
             maxZoomDistance={4}
             defaultRotationX={0}
             defaultRotationY={15}
@@ -259,6 +306,7 @@ function App() {
             rimLightIntensity={0.9}
             showScreenshotButton={false}
             fadeIn={true}
+            carColor={selectedCar?.color || '#FF0000'}
           />
         </div>
 
@@ -354,19 +402,51 @@ function App() {
                         <span>Jantı Çıkart</span>
                       </button>
                     ) : (
-                      <div className="parts-list">
-                        {wheelOptions.map((part) => (
-                          <button
-                            key={part.style}
-                            className="part-btn"
-                            onClick={() => handleCreateAndInstallWheels(part)}
-                            disabled={isProcessing}
-                          >
-                            <span>{part.name}</span>
-                            <span className="part-icon">+</span>
-                          </button>
-                        ))}
-                      </div>
+                      <>
+                        {/* Mevcut jantlar */}
+                        {wheels.length > 0 && (
+                          <div className="inventory-section">
+                            <div className="section-title">
+                              <Package size={14} />
+                              <span>Envanterdeki Jantlar</span>
+                            </div>
+                            <div className="parts-list">
+                              {wheels.map((wheel) => (
+                                <button
+                                  key={wheel.id}
+                                  className="part-btn inventory-item"
+                                  onClick={() => handleInstallWheels(wheel.id, wheel.style)}
+                                  disabled={isProcessing}
+                                >
+                                  <span>{wheel.style}</span>
+                                  <span className="part-icon">→</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Yeni jant oluştur */}
+                        <div className="create-section">
+                          <div className="section-title">
+                            <Plus size={14} />
+                            <span>Yeni Jant Oluştur</span>
+                          </div>
+                          <div className="parts-list">
+                            {wheelOptions.map((part) => (
+                              <button
+                                key={part.style}
+                                className="part-btn create-btn"
+                                onClick={() => handleCreateWheels(part)}
+                                disabled={isProcessing}
+                              >
+                                <span>{part.name}</span>
+                                <span className="part-icon">+</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </>
                     )}
                   </div>
                 )}
@@ -398,19 +478,51 @@ function App() {
                         <span>Tamponu Çıkart</span>
                       </button>
                     ) : (
-                      <div className="parts-list">
-                        {bumperOptions.map((part) => (
-                          <button
-                            key={part.style}
-                            className="part-btn"
-                            onClick={() => handleCreateAndInstallBumper(part)}
-                            disabled={isProcessing}
-                          >
-                            <span>{part.name}</span>
-                            <span className="part-icon">+</span>
-                          </button>
-                        ))}
-                      </div>
+                      <>
+                        {/* Mevcut tamponlar */}
+                        {bumpers.length > 0 && (
+                          <div className="inventory-section">
+                            <div className="section-title">
+                              <Package size={14} />
+                              <span>Envanterdeki Tamponlar</span>
+                            </div>
+                            <div className="parts-list">
+                              {bumpers.map((bumper) => (
+                                <button
+                                  key={bumper.id}
+                                  className="part-btn inventory-item"
+                                  onClick={() => handleInstallBumper(bumper.id, bumper.material)}
+                                  disabled={isProcessing}
+                                >
+                                  <span>{bumper.material}</span>
+                                  <span className="part-icon">→</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Yeni tampon oluştur */}
+                        <div className="create-section">
+                          <div className="section-title">
+                            <Plus size={14} />
+                            <span>Yeni Tampon Oluştur</span>
+                          </div>
+                          <div className="parts-list">
+                            {bumperOptions.map((part) => (
+                              <button
+                                key={part.style}
+                                className="part-btn create-btn"
+                                onClick={() => handleCreateBumper(part)}
+                                disabled={isProcessing}
+                              >
+                                <span>{part.name}</span>
+                                <span className="part-icon">+</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </>
                     )}
                   </div>
                 )}
