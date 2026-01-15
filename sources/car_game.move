@@ -6,14 +6,14 @@ module car_game::garage {
     use std::string::{Self, String};
     use std::option::{Self, Option};
 
-    // ===== Structs =====
+    // ===== CHAPTER 1: DATA STRUCTURES =====
 
     public struct Car has key, store {
         id: UID,
-        model: String,
-        color: String,
-        wheels: Option<Wheels>,
-        bumper: Option<Bumper>,
+        // MISSION: Add model (String) and color (String).
+        // MISSION: Add optional parts: wheels and bumper.
+        // HINT: Use Option<Wheels> and Option<Bumper>.
+        
     }
 
     public struct Wheels has key, store {
@@ -23,136 +23,77 @@ module car_game::garage {
 
     public struct Bumper has key, store {
         id: UID,
-        material: String,
+        // MISSION: Add a material field of type String.
+        
     }
 
-    // ===== Events =====
+    // ===== CHAPTER 2: EVENTS =====
 
     public struct CarModifiedEvent has copy, drop {
-        car_id: ID,
-        action_type: String,
+        // MISSION: Add fields to track which car was modified and what happened.
+        // Requirements: car_id (ID) and action_type (String).
+        
     }
 
-    // ===== Errors =====
-
+    // ===== CHAPTER 3: ERROR CODES =====
     const ERR_NO_WHEELS_TO_REMOVE: u64 = 1;
     const ERR_NO_BUMPER_TO_REMOVE: u64 = 2;
 
-    // ===== Functions =====
+    // ===== CHAPTER 4: MINTING =====
 
-    /// Create a new car with no parts and send it to the creator
+    /// MISSION: Create a new car and transfer it to the sender.
+    /// Requirements: Initialize the car with NO wheels and NO bumper (Option::none()).
     public entry fun mint_car(model: vector<u8>, color: vector<u8>, ctx: &mut TxContext) {
-        let car = Car {
-            id: object::new(ctx),
-            model: string::utf8(model),
-            color: string::utf8(color),
-            wheels: option::none(),
-            bumper: option::none(),
-        };
-        
-        transfer::public_transfer(car, tx_context::sender(ctx));
+        // TODO: Create the Car object and transfer it.
     }
 
-    /// Update the car's color and emit an event
+    // ===== CHAPTER 5: MODIFICATION & EVENTS =====
+
+    /// MISSION: Update the car's color and emit a CarModifiedEvent.
     public entry fun repaint_car(car: &mut Car, new_color: vector<u8>) {
-        car.color = string::utf8(new_color);
-
-        event::emit(CarModifiedEvent {
-            car_id: object::uid_to_inner(&car.id),
-            action_type: string::utf8(b"Repaint"),
-        });
+        // TODO: Update color field.
+        // TODO: Emit CarModifiedEvent with action type "Repaint".
     }
 
-    /// Create wheels to be installed later
+    // ===== CHAPTER 6: COMPOSABILITY (PARTS) =====
+
+    /// MISSION: Create wheels and send them to the sender.
     public entry fun create_wheels(style: vector<u8>, ctx: &mut TxContext) {
-        let wheels = Wheels {
-            id: object::new(ctx),
-            style: string::utf8(style),
-        };
-        transfer::public_transfer(wheels, tx_context::sender(ctx));
+        // TODO: Initialize Wheels and use public_transfer.
     }
 
-    /// Create wheels and return for PTB usage
-    public fun new_wheels(style: vector<u8>, ctx: &mut TxContext): Wheels {
-        Wheels {
-            id: object::new(ctx),
-            style: string::utf8(style),
-        }
-    }
-
-    /// Install wheels into the car. If the car already has wheels, 
-    /// the old ones are sent back to the owner.
-    public entry fun install_wheels(car: &mut Car, new_wheels: Wheels, ctx: &mut TxContext) {
-        // If there are already wheels, extract them and send back to owner
-        if (option::is_some(&car.wheels)) {
-            let old_wheels = option::extract(&mut car.wheels);
-            transfer::public_transfer(old_wheels, tx_context::sender(ctx));
-        };
-
-        option::fill(&mut car.wheels, new_wheels);
-
-        event::emit(CarModifiedEvent {
-            car_id: object::uid_to_inner(&car.id),
-            action_type: string::utf8(b"Install Wheels"),
-        });
-    }
-
-    /// Remove wheels from the car and send them to the owner's wallet
-    public entry fun remove_wheels(car: &mut Car, ctx: &mut TxContext) {
-        assert!(option::is_some(&car.wheels), ERR_NO_WHEELS_TO_REMOVE);
-
-        let wheels = option::extract(&mut car.wheels);
-        transfer::public_transfer(wheels, tx_context::sender(ctx));
-
-        event::emit(CarModifiedEvent {
-            car_id: object::uid_to_inner(&car.id),
-            action_type: string::utf8(b"Remove Wheels"),
-        });
-    }
-
-    /// Bonus: Logic for Bumper (similar to wheels)
-    public entry fun create_bumper(material: vector<u8>, ctx: &mut TxContext) {
-        let bumper = Bumper {
-            id: object::new(ctx),
-            material: string::utf8(material),
-        };
-        transfer::public_transfer(bumper, tx_context::sender(ctx));
-    }
-
-    /// Create bumper and return for PTB usage
+    /// MISSION: Create a bumper but RETURN it (to be used in a Programmable Transaction Block).
     public fun new_bumper(material: vector<u8>, ctx: &mut TxContext): Bumper {
-        Bumper {
-            id: object::new(ctx),
-            material: string::utf8(material),
-        }
+        // TODO: Initialize and return Bumper.
     }
 
-    /// Install bumper into the car. If the car already has bumper,
-    /// the old one is sent back to the owner.
+    // ===== CHAPTER 7: INSTALLATION & REMOVAL =====
+
+    /// MISSION: Logic to put wheels inside the Car object.
+    /// Steps: 
+    /// 1. Check if the car already has wheels. 
+    /// 2. If it does, extract the old wheels and send them back to the owner.
+    /// 3. Fill the empty slot with the new_wheels.
+    public entry fun install_wheels(car: &mut Car, new_wheels: Wheels, ctx: &mut TxContext) {
+        // TODO: Handle existing wheels using option::is_some and option::extract.
+        // TODO: Place new_wheels using option::fill.
+        // TODO: Emit event.
+    }
+
+    /// MISSION: Take wheels out of the car and send them back to the owner.
+    public entry fun remove_wheels(car: &mut Car, ctx: &mut TxContext) {
+        // TODO: Add an assertion to ensure wheels exist.
+        // TODO: Extract wheels and transfer back to sender.
+        // TODO: Emit event.
+    }
+
+    /// MISSION: Install a bumper into the car slot.
     public entry fun install_bumper(car: &mut Car, new_bumper: Bumper, ctx: &mut TxContext) {
-        if (option::is_some(&car.bumper)) {
-            let old_bumper = option::extract(&mut car.bumper);
-            transfer::public_transfer(old_bumper, tx_context::sender(ctx));
-        };
-
-        option::fill(&mut car.bumper, new_bumper);
-
-        event::emit(CarModifiedEvent {
-            car_id: object::uid_to_inner(&car.id),
-            action_type: string::utf8(b"Install Bumper"),
-        });
+        // TODO: Implementation similar to install_wheels.
     }
 
-    /// Remove bumper from the car and send it to the owner's wallet
+    /// MISSION: Remove a bumper from the car slot.
     public entry fun remove_bumper(car: &mut Car, ctx: &mut TxContext) {
-        assert!(option::is_some(&car.bumper), ERR_NO_BUMPER_TO_REMOVE);
-
-        let bumper = option::extract(&mut car.bumper);
-        transfer::public_transfer(bumper, tx_context::sender(ctx));
-
-        event::emit(CarModifiedEvent {
-            car_id: object::uid_to_inner(&car.id),
-            action_type: string::utf8(b"Remove Bumper"),
-        });
+        // TODO: Implementation similar to remove_wheels.
     }
 }
